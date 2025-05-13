@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jenkins-config
+  namespace: jenkins
+data:
+  JENKINS_HOME: "/var/jenkins_home"
+  # Add other Jenkins configuration key-value pairs here as needed

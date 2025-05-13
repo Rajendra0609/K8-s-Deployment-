@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins: agent
+spec:
+  initContainers:
+  - name: update-ca
+    image: debian:bullseye-slim
+    command:
+      - sh
+      - -c
+      - |
+        apt-get update && \
+        apt-get install -y ca-certificates && \
+        cp /usr/local/share/ca-certificates/jenkins/jenkins-ca.crt /usr/local/share/ca-certificates/jenkins-ca.crt && \
+        update-ca-certificates && \
+        cp -r /etc/ssl/certs /certs
+    volumeMounts:
+      - name: jenkins-cert-secret
+        mountPath: /usr/local/share/ca-certificates/jenkins
+      - name: ca-certs
+        mountPath: /certs
+
+  containers:
+  - name: jenkins  # This must match the defaultContainer in the pipeline
+    image: jenkins/inbound-agent:3299.v0d0d06908537-1
+    args: ['$(JENKINS_SECRET)', '$(JENKINS_NAME)']
+    env:
+    - name: JENKINS_AGENT_WORKDIR
+      value: /home/jenkins/agent
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+    volumeMounts:
+    - name: workspace-volume
+      mountPath: /home/jenkins/agent
+    - name: ca-certs
+      mountPath: /etc/ssl/certs
+  volumes:
+  - name: workspace-volume
+    emptyDir: {}
+  - name: jenkins-cert-secret
+    secret:
+      secretName: jenkins-cert-secret
+  - name: ca-certs
+    emptyDir: {}

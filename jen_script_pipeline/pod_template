@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: jnlp
+    image: daggu1997/node_kube:v1.0
+    volumeMounts:
+    - mountPath: /home/jenkins/agent
+      name: workspace-volume
+  volumes:
+  - name: workspace-volume
+    emptyDir: {}

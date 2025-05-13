@@ -1,0 +1,7 @@
+pipeline {
+    agent {
+        kubernetes {
+            inheritFrom 'node_ubuntu'    // Jenkins agent label
+            defaultContainer 'jnlp'      // Default container inside the pod
+        }
+    }

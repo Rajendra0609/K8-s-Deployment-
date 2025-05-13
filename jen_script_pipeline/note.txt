@@ -1,0 +1,2 @@
+kubectl create secret generic jenkins-admin-secret   --from-literal=jenkins-user=raja   --from-literal=jenkins-password=raja   -n jenkins
+kubectl get secret jenkins-admin-secret -n jenkins -o jsonpath="{.data.token}" | base64 --decode
