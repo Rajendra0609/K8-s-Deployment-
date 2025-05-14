@@ -1,0 +1,3 @@
+# PodSecurityPolicy is deprecated and not supported in this cluster version.
+# Consider using Pod Security Admission or other mechanisms for pod security.
+# This file is intentionally left empty or can be removed.

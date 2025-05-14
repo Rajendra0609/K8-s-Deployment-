@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sonarqube-config
+  namespace: sonar
+data:
+  SONAR_JDBC_URL: jdbc:postgresql://postgresql.sql.svc.cluster.local:5432/sonarqube

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-config
+  namespace: sql
+data:
+  POSTGRES_DB: sonarqube
+  POSTGRES_USER: sonaruser
+  POSTGRES_PASSWORD: sonarpass
+
