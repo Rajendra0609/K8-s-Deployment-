@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgresql-init-sonarqube-db
+  namespace: sql
+spec:
+  template:
+    spec:
+      containers:
+        - name: init-db
+          image: postgres:13
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: POSTGRES_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: POSTGRES_PASSWORD
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL to be ready..."
+              until pg_isready -h postgresql -U "$POSTGRES_USER"; do
+                sleep 2
+              done
+              echo "Connected. Initializing database..."
+              psql -h postgresql -U "$POSTGRES_USER" -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'sonarqube'" | grep -q 1 || \
+                psql -h postgresql -U "$POSTGRES_USER" -d postgres -c "CREATE DATABASE sonarqube;"
+              psql -h postgresql -U "$POSTGRES_USER" -d postgres -tc "SELECT 1 FROM pg_roles WHERE rolname = 'sonar'" | grep -q 1 || \
+                psql -h postgresql -U "$POSTGRES_USER" -d postgres -c "CREATE USER sonar WITH ENCRYPTED PASSWORD 'sonar';"
+              psql -h postgresql -U "$POSTGRES_USER" -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE sonarqube TO sonar;"
+      restartPolicy: OnFailure
+
+

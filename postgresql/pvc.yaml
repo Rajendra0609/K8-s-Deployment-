@@ -12,7 +12,6 @@ spec:
   storageClassName: ""
   hostPath:
     path: /var/lib/postgresql
-
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -27,3 +26,4 @@ spec:
   resources:
     requests:
       storage: 5Gi
+  volumeMode: Filesystem

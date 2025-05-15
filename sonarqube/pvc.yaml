@@ -1,35 +1,53 @@
-# Static PersistentVolume for SonarQube data
-# This PV uses hostPath and has no storageClassName to avoid dynamic provisioning
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: sonarpv
-  namespace: sonar
+  name: sonar-pv
 spec:
   capacity:
-    storage: 10Gi
-  volumeMode: Filesystem
+    storage: 5Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: ""
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: default
   hostPath:
-    path: /opt/sonarqube
-
+    path: /mnt/data/sonar
 ---
-# Static PersistentVolumeClaim for SonarQube
-# This PVC binds to the static PV 'sonarpv' and has no storageClassName
-# Avoid creating dynamic PVCs with storageClass 'standard' in the sonar namespace to prevent duplicates
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: sonar-extensions-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: default
+  hostPath:
+    path: /mnt/data/sonar-extensions
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: sonarpvc
+  name: sonar-data
   namespace: sonar
 spec:
-  resources:
-    requests:
-      storage: 10Gi
-  volumeMode: Filesystem
-  storageClassName: ""
   accessModes:
     - ReadWriteOnce
+  storageClassName: default
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonar-extensions
+  namespace: sonar
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: default
+  resources:
+    requests:
+      storage: 1Gi

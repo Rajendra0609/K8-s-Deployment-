@@ -4,12 +4,12 @@ metadata:
   name: sonarqube
   namespace: sonar
   labels:
-    app: sonarqube
+    name: sonarqube
 spec:
+  replicas: 1
   selector:
     matchLabels:
-      app: sonarqube
-  replicas: 1
+      name: sonarqube
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -17,71 +17,65 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      name: sonarqube
       labels:
-        app: sonarqube
+        name: sonarqube
     spec:
       serviceAccountName: sonarqube
       initContainers:
-      - name: fix-permissions
-        image: busybox
-        command: ["sh", "-c", "chown -R 1000:1000 /opt/sonarqube/data"]
-        volumeMounts:
-        - name: sonarqube-data
-          mountPath: /opt/sonarqube/data
+        - name: fix-permissions
+          image: busybox
+          command: ["sh", "-c", "chown -R 1000:1000 /opt/sonarqube/data /opt/sonarqube/extensions /opt/sonarqube/logs"]
+          volumeMounts:
+            - name: sonar-data
+              mountPath: /opt/sonarqube/data
+            - name: sonar-extensions
+              mountPath: /opt/sonarqube/extensions
+            - name: sonar-logs
+              mountPath: /opt/sonarqube/logs
       containers:
-      - name: sonarqube
-        image: sonarqube:latest
-        resources:
-          requests:
-            cpu: "1"
-            memory: "2Gi"
-          limits:
-            cpu: "2"
-            memory: "3Gi"
-        livenessProbe:
-          httpGet:
-            path: /api/system/health
-            port: 9000
-          initialDelaySeconds: 1200
-          timeoutSeconds: 10
-          successThreshold: 1
-          failureThreshold: 3
-          periodSeconds: 20
-        readinessProbe:
-          httpGet:
-            path: /api/system/health
-            port: 9000
-          initialDelaySeconds: 1200
-          timeoutSeconds: 10
-          successThreshold: 1
-          failureThreshold: 3
-          periodSeconds: 20
-        env:
-        - name: SONAR_JDBC_URL
-          valueFrom:
-            configMapKeyRef:
-              name: sonarqube-config
-              key: SONAR_JDBC_URL
-        - name: SONAR_JDBC_USERNAME
-          valueFrom:
-            secretKeyRef:
+        - name: sonarqube
+          image: sonarqube:latest # <- LTS version as of 2025
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "3Gi"
+          env:
+            - name: SONARQUBE_JDBC_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: sonarqube-config
+                  key: SONAR_JDBC_URL
+            - name: SONARQUBE_JDBC_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-pwd
+                  key: username
+            - name: SONARQUBE_JDBC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-pwd
+                  key: password
+          ports:
+            - containerPort: 9000
               name: sonarqube
-              key: SONAR_JDBC_USERNAME
-        - name: SONAR_JDBC_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: sonarqube
-              key: SONAR_JDBC_PASSWORD
-        ports:
-        - containerPort: 9000
-          name: sonarqube
-        volumeMounts:
-        - name: sonarqube-data
-          mountPath: /opt/sonarqube/data
+          volumeMounts:
+            - mountPath: "/opt/sonarqube/data/"
+              name: sonar-data
+            - mountPath: "/opt/sonarqube/extensions/"
+              name: sonar-extensions
+            - mountPath: "/opt/sonarqube/logs/"
+              name: sonar-logs
       volumes:
-      - name: sonarqube-data
-        persistentVolumeClaim:
-          claimName: sonarpvc
-# The above volume uses a static PersistentVolumeClaim 'sonarpvc' defined in pvc.yaml
-# This PVC binds to a static PersistentVolume with no storageClassName to avoid dynamic provisioning
-# Avoid creating dynamic PVCs with storageClass 'standard' in the sonar namespace to prevent duplicates
+        - name: sonar-data
+          persistentVolumeClaim:
+            claimName: sonar-data
+        - name: sonar-extensions
+          persistentVolumeClaim:
+            claimName: sonar-extensions
+        - name: sonar-logs
+          emptyDir: {}  # ephemeral log storage
+
