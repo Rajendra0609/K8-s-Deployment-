@@ -36,7 +36,7 @@ spec:
       volumes:
       - name: jenkins-home
         persistentVolumeClaim:
-          claimName: mypvc
+          claimName: jenkins-pvc
       - name: jenkins-admin-secret
         secret:
           secretName: jenkins-admin-secret

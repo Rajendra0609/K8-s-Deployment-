@@ -18,7 +18,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mypvc
+  name: jenkins-pvc
   namespace: jenkins
 spec:
   accessModes:
