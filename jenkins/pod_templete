@@ -40,3 +40,136 @@ spec:
         path: /var/run/docker.sock
         type: Socket
 
+###########################################################################################################
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jenkins-agent-small
+spec:
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: jnlp
+      image: daggu1997/node_kube:v1.2
+      resources:
+        requests:
+          memory: "0.5Gi"
+          cpu: "0.5"
+        limits:
+          memory: "0.5Gi"
+          cpu: "0.5"
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 999
+        fsGroup: 999
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        seccompProfile:
+          type: RuntimeDefault
+      volumeMounts:
+        - name: workspace-volume
+          mountPath: /home/jenkins/agent
+        - name: docker-sock
+          mountPath: /var/run/docker.sock
+  volumes:
+    - name: workspace-volume
+      emptyDir: {}
+    - name: docker-sock
+      hostPath:
+        path: /var/run/docker.sock
+        type: Socket
+
+####################################################################################################
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jenkins-agent-medium
+spec:
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: jnlp
+      image: daggu1997/node_kube:v1.2
+      resources:
+        requests:
+          memory: "1Gi"
+          cpu: "1"
+        limits:
+          memory: "1Gi"
+          cpu: "1"
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 999
+        fsGroup: 999
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        seccompProfile:
+          type: RuntimeDefault
+      volumeMounts:
+        - name: workspace-volume
+          mountPath: /home/jenkins/agent
+        - name: docker-sock
+          mountPath: /var/run/docker.sock
+  volumes:
+    - name: workspace-volume
+      emptyDir: {}
+    - name: docker-sock
+      hostPath:
+        path: /var/run/docker.sock
+        type: Socket
+
+#################################################################################
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jenkins-agent-large
+spec:
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: jnlp
+      image: daggu1997/node_kube:v1.2
+      resources:
+        requests:
+          memory: "1.5Gi"
+          cpu: "1"
+        limits:
+          memory: "1.5Gi"
+          cpu: "1"
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 999
+        fsGroup: 999
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        seccompProfile:
+          type: RuntimeDefault
+      volumeMounts:
+        - name: workspace-volume
+          mountPath: /home/jenkins/agent
+        - name: docker-sock
+          mountPath: /var/run/docker.sock
+  volumes:
+    - name: workspace-volume
+      emptyDir: {}
+    - name: docker-sock
+      hostPath:
+        path: /var/run/docker.sock
+        type: Socket
+
