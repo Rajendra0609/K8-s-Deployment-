@@ -1,0 +1,80 @@
+raja@k8s-master:~/kubernetes/jenkins$ kubectl -n kube-system edit configmap coredns
+
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health {
+           lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           fallthrough in-addr.arpa ip6.arpa
+           ttl 30
+        }
+        prometheus :9153
+        forward . 8.8.8.8 8.8.4.4 {
+           max_concurrent 1000
+        }
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+
+
+Edit cancelled, no changes made.
+raja@k8s-master:~/kubernetes/jenkins$ kubectl rollout restart deployment coredns -n kube-system
+
+
+kubectl run testdns --image=busybox:1.28 -it --rm --restart=Never -- nslookup google.com
+
+
+kubectl exec -n jenkins jenkins-7b74958b98-l4dtf  -- curl -I https://updates.jenkins.io
+
+
+
+kubectl create clusterrolebinding jenkins-admin-binding \
+  --clusterrole=cluster-admin \
+  --serviceaccount=jenkins:default
+
+
+
+kubectl apply -f jenkins-sa-token.yaml
+
+kubectl -n jenkins get secret jenkins-sa-token -o jsonpath='{.data.token}' | base64 --decode
+
+
+
+# Step 1: Delete the old token
+kubectl -n jenkins delete secret jenkins-sa-token
+
+# Step 2: Wait a few seconds, then list secrets again
+kubectl -n jenkins get secrets
+
+# Step 3: Check the new secret name for the service account
+kubectl -n jenkins get sa jenkins -o jsonpath='{.secrets[*].name}'
+
+# Step 4: Decode new token
+kubectl -n jenkins get secret <new-secret-name> -o jsonpath='{.data.token}' | base64 --decode
+
+
+
+raja@k8s-worker1:~$ sudo cat /var/lib/kubelet/config.yaml | grep healthzBindAddress
+healthzBindAddress: 127.0.0.1
+
+
+docker.io/daggu1997/kubejenkins:v1.1
+ilaga ivalu 
+
+sudo ctr image pull docker.io/
+
+sudo crictl images list
+
